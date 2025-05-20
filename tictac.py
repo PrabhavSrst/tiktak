@@ -1,5 +1,4 @@
 import pygame
-from pygame.locals import QUIT, MOUSEBUTTONDOWN, MOUSEBUTTONUP
 
 pygame.init()   
 screen_width=300
@@ -45,35 +44,57 @@ def draw_markers():#function for drawing the markers
             y_pos+=1
         x_pos+=1
 
-def check_winner():#checking for a winner 
-    y_pos=0
+def check_winner():
     global winner
     global game
-    for x in markers:
-        #columns
-        if sum(x)==3:
-            winner=1
-            game=True
-        if sum(x)==-3:
-            winner=2
-            game=True
-        #rows
-        if markers[0][y_pos]+markers[1][y_pos]+markers[2][y_pos]==-3:
+
+    # Check rows
+    for row in markers:
+        if sum(row) == 3:
+            winner = 1
+            game = True
+        elif sum(row) == -3:
             winner = 2
-            game=True
-        y_pos+=1
-#check cross
-    if markers[0][0]+markers[1][1]+markers[2][2]==3 or markers[2][0]+markers[1][1]+markers[0][2]==3:
-            winner=1
-            game=True
-    if markers[0][0]+markers[1][1]+markers[2][2]==-3 or markers[2][0]+markers[1][1]+markers[0][2]==-3:
-            winner=2
-            game=True
+            game = True
+
+    # Check columns
+    for col in range(3):
+        column_sum = markers[0][col] + markers[1][col] + markers[2][col]
+        if column_sum == 3:
+            winner = 1
+            game = True
+        elif column_sum == -3:
+            winner = 2
+            game = True
+
+    # Check diagonals
+    diag1 = markers[0][0] + markers[1][1] + markers[2][2]
+    diag2 = markers[0][2] + markers[1][1] + markers[2][0]
+    if diag1 == 3 or diag2 == 3:
+        winner = 1
+        game = True
+    elif diag1 == -3 or diag2 == -3:
+        winner = 2
+        game = True
+
+    # Check draw
+    if not any(0 in row for row in markers) and not game:
+        winner = 0
+        game = True
+
+
 def draw_winner(winner):#display winner
-    winned='Player ' + str(winner) + " wins" 
+    if winner == 0:
+        winned = "It's a Draw!"
+    else:
+        winned='Player ' + str(winner) + " wins" 
     winned= font.render(winned, True, blue)
     pygame.draw.rect(screen, green, (screen_width //2 -100 , screen_height // 2-60, 200, 50))
     screen.blit(winned, (screen_width // 2-100, screen_height // 2 - 50))
+    again="Play again?"
+    again_img= font.render(again, True, blue)
+    pygame.draw.rect(screen, green, (screen_width //2 -100 , screen_height // 2+10, 200, 50))
+    screen.blit(again_img, (screen_width // 2-100, screen_height // 2 + 20))    
 while run:#window and game state display
     draw_grid()
     draw_markers()
@@ -94,6 +115,19 @@ while run:#window and game state display
                     check_winner()
     if game== True:
         draw_winner(winner)
-
+        #check mouse click
+        if event.type == pygame.MOUSEBUTTONDOWN and clicked== False:
+            clicked = True
+        if event.type == pygame.MOUSEBUTTONUP and clicked == True:
+            clicked= False
+            pos=pygame.mouse.get_pos()
+            markers=[]
+            pos=[]
+            player=1
+            winner=0
+            game=False
+            for x in range(3):
+                row=[0]*3
+                markers.append(row)
     pygame.display.update()
 pygame.quit()
